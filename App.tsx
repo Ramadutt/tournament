@@ -1,13 +1,12 @@
-
 import React, { useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
-import Home from './pages/Home';
-import MyTournaments from './pages/MyTournaments';
-import Wallet from './pages/Wallet';
-import Profile from './pages/Profile';
 import Login from './pages/Login';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ManageTournaments from './pages/Home'; // Repurposed for Manage Tournaments
+import CreateTournament from './pages/MyTournaments'; // Repurposed for Create Tournament
+import ManageUsers from './pages/Profile'; // Repurposed for Manage Users
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -45,16 +44,20 @@ const App: React.FC = () => {
 
 const Router: React.FC = () => {
   const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   return (
     <HashRouter>
       <Routes>
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-        <Route path="/" element={user ? <Layout><Home /></Layout> : <Navigate to="/login" />} />
-        <Route path="/my-tournaments" element={user ? <Layout><MyTournaments /></Layout> : <Navigate to="/login" />} />
-        <Route path="/wallet" element={user ? <Layout><Wallet /></Layout> : <Navigate to="/login" />} />
-        <Route path="/profile" element={user ? <Layout><Profile /></Layout> : <Navigate to="/login" />} />
-        <Route path="*" element={<Navigate to={user ? "/" : "/login"} />} />
+        <Route path="/login" element={!isAdmin ? <Login /> : <Navigate to="/" />} />
+        
+        {/* Protected Admin Routes */}
+        <Route path="/" element={isAdmin ? <Layout><AdminDashboard /></Layout> : <Navigate to="/login" />} />
+        <Route path="/manage-tournaments" element={isAdmin ? <Layout><ManageTournaments /></Layout> : <Navigate to="/login" />} />
+        <Route path="/create-tournament" element={isAdmin ? <Layout><CreateTournament /></Layout> : <Navigate to="/login" />} />
+        <Route path="/manage-users" element={isAdmin ? <Layout><ManageUsers /></Layout> : <Navigate to="/login" />} />
+        
+        <Route path="*" element={<Navigate to={isAdmin ? "/" : "/login"} />} />
       </Routes>
     </HashRouter>
   );

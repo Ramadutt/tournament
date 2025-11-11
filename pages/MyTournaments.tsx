@@ -1,76 +1,79 @@
-
 import React, { useState } from 'react';
-import TabSwitcher from '../components/TabSwitcher';
 import { useAuth } from '../context/AuthContext';
-import { Tournament } from '../types';
+import { useNavigate } from 'react-router-dom';
 
-const MyTournamentCard: React.FC<{ tournament: Tournament, userWon: boolean }> = ({ tournament, userWon }) => {
-    return (
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 space-y-3">
-            <div className="flex justify-between items-start">
-                <div>
-                    <h3 className="font-bold text-white">{tournament.title}</h3>
-                    <p className="text-sm text-gray-400">{tournament.game_name}</p>
-                </div>
-                {tournament.status === 'Completed' ? (
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${userWon ? 'bg-green-500/20 text-green-400' : 'bg-gray-600 text-gray-300'}`}>
-                        {userWon ? 'Winner' : 'Participated'}
-                    </span>
-                ) : (
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${tournament.status === 'Live' ? 'bg-red-500/20 text-red-400 animate-pulse' : 'bg-blue-500/20 text-blue-400'}`}>
-                        {tournament.status}
-                    </span>
-                )}
-            </div>
-            {tournament.status === 'Live' && tournament.room_id && tournament.room_password && (
-                 <div className="bg-gray-900 p-3 rounded-md text-center">
-                    <p className="text-sm text-gray-400">Room ID: <span className="font-mono text-teal-400">{tournament.room_id}</span></p>
-                    <p className="text-sm text-gray-400">Password: <span className="font-mono text-teal-400">{tournament.room_password}</span></p>
-                 </div>
-            )}
-             <div className="text-xs text-gray-500 flex justify-between">
-                <span>Prize: ₹{tournament.prize_pool}</span>
-                <span>Entry: ₹{tournament.entry_fee}</span>
-            </div>
-        </div>
-    );
-};
-
-const MyTournaments: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('Upcoming/Live');
-  const { user, tournaments, participants } = useAuth();
+const CreateTournament: React.FC = () => {
+  const { createTournament } = useAuth();
+  const navigate = useNavigate();
   
-  const joinedTournamentIds = participants
-    .filter(p => p.user_id === user?.id)
-    .map(p => p.tournament_id);
+  const [title, setTitle] = useState('');
+  const [gameName, setGameName] = useState('');
+  const [entryFee, setEntryFee] = useState(0);
+  const [prizePool, setPrizePool] = useState(0);
+  const [matchTime, setMatchTime] = useState('');
+  const [commission, setCommission] = useState(10);
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  const myTournaments = tournaments.filter(t => joinedTournamentIds.includes(t.id));
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+    if (!title || !gameName || !matchTime) {
+        setMessage({ type: 'error', text: 'Please fill all required fields.'});
+        return;
+    }
 
-  const upcomingLive = myTournaments.filter(t => t.status === 'Upcoming' || t.status === 'Live');
-  const completed = myTournaments.filter(t => t.status === 'Completed');
+    const result = createTournament({
+        title,
+        game_name: gameName,
+        entry_fee: Number(entryFee),
+        prize_pool: Number(prizePool),
+        match_time: new Date(matchTime).toISOString(),
+        commission_percentage: Number(commission)
+    });
+
+    setMessage({ type: result.success ? 'success' : 'error', text: result.message });
+    if(result.success) {
+        setTimeout(() => navigate('/manage-tournaments'), 1500);
+    }
+  };
 
   return (
     <div className="p-4 space-y-4">
-      <TabSwitcher tabs={['Upcoming/Live', 'Completed']} activeTab={activeTab} setActiveTab={setActiveTab} />
-      
-      <div className="space-y-4">
-        {activeTab === 'Upcoming/Live' && (
-            upcomingLive.length > 0 ? (
-                upcomingLive.map(t => <MyTournamentCard key={t.id} tournament={t} userWon={false} />)
-            ) : (
-                <p className="text-center text-gray-500 py-10">You haven't joined any upcoming tournaments.</p>
-            )
-        )}
-        {activeTab === 'Completed' && (
-            completed.length > 0 ? (
-                completed.map(t => <MyTournamentCard key={t.id} tournament={t} userWon={t.winner_id === user?.id} />)
-            ) : (
-                 <p className="text-center text-gray-500 py-10">No completed tournaments to show.</p>
-            )
-        )}
-      </div>
+      <h2 className="text-2xl font-bold">Create New Tournament</h2>
+      <form onSubmit={handleSubmit} className="bg-gray-800 p-4 rounded-lg space-y-4 border border-gray-700">
+        <div>
+          <label className="text-sm text-gray-400" htmlFor="title">Title</label>
+          <input id="title" type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2 mt-1" required/>
+        </div>
+        <div>
+          <label className="text-sm text-gray-400" htmlFor="game_name">Game Name</label>
+          <input id="game_name" type="text" value={gameName} onChange={e => setGameName(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2 mt-1" required/>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+            <div>
+                <label className="text-sm text-gray-400" htmlFor="entry_fee">Entry Fee (₹)</label>
+                <input id="entry_fee" type="number" value={entryFee} onChange={e => setEntryFee(Number(e.target.value))} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2 mt-1" />
+            </div>
+            <div>
+                <label className="text-sm text-gray-400" htmlFor="prize_pool">Prize Pool (₹)</label>
+                <input id="prize_pool" type="number" value={prizePool} onChange={e => setPrizePool(Number(e.target.value))} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2 mt-1" />
+            </div>
+        </div>
+        <div>
+            <label className="text-sm text-gray-400" htmlFor="match_time">Match Time</label>
+            <input id="match_time" type="datetime-local" value={matchTime} onChange={e => setMatchTime(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2 mt-1" required/>
+        </div>
+        <div>
+            <label className="text-sm text-gray-400" htmlFor="commission">Commission (%)</label>
+            <input id="commission" type="number" value={commission} onChange={e => setCommission(Number(e.target.value))} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2 mt-1" />
+        </div>
+        {message && <p className={`text-sm text-center ${message.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>{message.text}</p>}
+        <button type="submit" className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+          Create Tournament
+        </button>
+      </form>
     </div>
   );
 };
 
-export default MyTournaments;
+export default CreateTournament;

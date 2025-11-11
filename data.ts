@@ -1,9 +1,8 @@
-
 import { User, Tournament, Participant, Transaction } from './types';
 
 export const initialUsers: User[] = [
-    { id: 1, username: 'PlayerOne', email: 'playerone@email.com', wallet_balance: 1500 },
-    { id: 2, username: 'ProGamer', email: 'progamer@email.com', wallet_balance: 500 },
+    { id: 1, username: 'PlayerOne', email: 'playerone@email.com', wallet_balance: 1500, role: 'admin', password: 'admin' },
+    { id: 2, username: 'ProGamer', email: 'progamer@email.com', wallet_balance: 500, role: 'user', password: 'password' },
 ];
 
 export const initialTournaments: Tournament[] = [
@@ -14,7 +13,8 @@ export const initialTournaments: Tournament[] = [
         entry_fee: 100, 
         prize_pool: 5000, 
         match_time: '2024-08-15T18:00:00Z',
-        status: 'Upcoming' 
+        status: 'Upcoming',
+        commission_percentage: 10,
     },
     { 
         id: 2, 
@@ -23,7 +23,8 @@ export const initialTournaments: Tournament[] = [
         entry_fee: 50, 
         prize_pool: 2500, 
         match_time: '2024-08-16T20:00:00Z',
-        status: 'Upcoming' 
+        status: 'Upcoming',
+        commission_percentage: 15,
     },
     { 
         id: 3, 
@@ -34,7 +35,8 @@ export const initialTournaments: Tournament[] = [
         match_time: '2024-08-10T19:00:00Z',
         status: 'Live',
         room_id: 'CODPRO123',
-        room_password: 'SECRET_PASSWORD'
+        room_password: 'SECRET_PASSWORD',
+        commission_percentage: 20,
     },
     { 
         id: 4, 
@@ -44,7 +46,8 @@ export const initialTournaments: Tournament[] = [
         prize_pool: 1000, 
         match_time: '2024-08-01T15:00:00Z',
         status: 'Completed',
-        winner_id: 2
+        winner_id: 2,
+        commission_percentage: 0,
     }
 ];
 
@@ -53,6 +56,9 @@ export const initialParticipants: Participant[] = [
     { id: 2, user_id: 2, tournament_id: 3 },
     { id: 3, user_id: 1, tournament_id: 4 },
     { id: 4, user_id: 2, tournament_id: 4 },
+    { id: 5, user_id: 1, tournament_id: 1 },
+    { id: 6, user_id: 2, tournament_id: 1 },
+    { id: 7, user_id: 2, tournament_id: 2 },
 ];
 
 export const initialTransactions: Transaction[] = [

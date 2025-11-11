@@ -4,6 +4,8 @@ export interface User {
   username: string;
   email: string;
   wallet_balance: number;
+  role: 'user' | 'admin';
+  password?: string;
 }
 
 export interface Tournament {
@@ -17,6 +19,7 @@ export interface Tournament {
   room_password?: string;
   status: 'Upcoming' | 'Live' | 'Completed';
   winner_id?: number;
+  commission_percentage: number;
 }
 
 export interface Participant {
